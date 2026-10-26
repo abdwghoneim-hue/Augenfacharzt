@@ -89,6 +89,15 @@ enum ExamMode {
   IMAGE
 }
 
+/// Verification state of an imported protocol question's model answer. Imports never
+/// set a state stronger than what the review documented.
+enum VerificationStatus {
+  SOURCE_VERIFIED
+  PARTIALLY_VERIFIED
+  TEXTBOOK_ONLY
+  MANUAL_REVIEW_REQUIRED
+}
+
 // ---------- Auth & users ----------
 
 model User {
@@ -166,6 +175,82 @@ model QuestionSpecialty {
   @@id([questionId, specialtyId])
 }
 
+// ---------- Exam locations & protocols (Phase 2) ----------
+// Hierarchy for browsing: Bundesland -> exam location -> specialty -> subcategory.
+// No examiner data lives in this database.
+
+model ExamLocation {
+  id                String  @id @default(cuid())
+  /// Stable ID from the review, e.g. "LOC-001".
+  code              String  @unique
+  slug              String  @unique
+  /// Display name, e.g. "Düsseldorf" or "Ärztekammer Westfalen-Lippe".
+  name              String
+  city              String?
+  chamber           String?
+  bundesland        String?
+  /// true when the Bundesland was derived from city/chamber, not stated in the protocol.
+  bundeslandDerived Boolean @default(false)
+  /// true for the bucket of protocols whose location is not stated in the source.
+  isUnknown         Boolean @default(false)
+  order             Int     @default(0)
+
+  protocols ExamProtocol[]
+  questions QuestionLocation[]
+  sessions  ExamSession[]
+}
+
+model ExamProtocol {
+  id               String       @id @default(cuid())
+  /// Stable ID from the review, e.g. "PR-007".
+  code             String       @unique
+  locationId       String
+  location         ExamLocation @relation(fields: [locationId], references: [id])
+  year             Int?
+  dateText         String?
+  examFormat       String?
+  isGermanOralExam Boolean      @default(true)
+  lowConfidence    Boolean      @default(false)
+  sourceDocument   String?
+  sourcePages      String?
+
+  occurrences QuestionOccurrence[]
+
+  @@index([locationId])
+}
+
+/// One appearance of a (canonical) question in one protocol. Keeps every original wording.
+model QuestionOccurrence {
+  id            String       @id @default(cuid())
+  /// Stable ID from the review, e.g. "OQ-0032".
+  code          String       @unique
+  /// Null for protocol items that could not be assigned to a canonical question.
+  questionId    String?
+  question      Question?    @relation(fields: [questionId], references: [id], onDelete: SetNull)
+  protocolId    String
+  protocol      ExamProtocol @relation(fields: [protocolId], references: [id])
+  originalText  String       @db.Text
+  correctedText String?      @db.Text
+  answerExcerpt String?      @db.Text
+  sourcePages   String?
+  flags         String?
+
+  @@index([questionId])
+  @@index([protocolId])
+}
+
+/// Denormalised question <-> location link so "learn by location" is a single join.
+model QuestionLocation {
+  questionId      String
+  question        Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  locationId      String
+  location        ExamLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  occurrenceCount Int          @default(1)
+
+  @@id([questionId, locationId])
+  @@index([locationId])
+}
+
 // ---------- Questions, answers, cases, images ----------
 
 model Question {
@@ -180,6 +265,21 @@ model Question {
   importBatchId String?
   importBatch   ImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
 
+  // --- Phase 2: protocol-import metadata (all optional; existing rows unaffected) ---
+  /// Stable ID from the protocol review, e.g. "CQ-001". Used for idempotent re-imports.
+  canonicalCode         String?             @unique
+  importKey             String?             @unique
+  subcategory           String?
+  verificationStatus    VerificationStatus?
+  /// Human-readable review notes (open points, manual-check reasons).
+  reviewNotes           String?             @db.Text
+  germanVsInternational String?             @db.Text
+  controversies         String?             @db.Text
+  /// Number of distinct exam protocols in which the question occurs.
+  protocolCount         Int                 @default(0)
+  /// Corrections, evidence classes and specialist-review flags from the review.
+  reviewData            Json?
+
   createdById String
   createdBy   User   @relation("QuestionCreatedBy", fields: [createdById], references: [id])
 
@@ -192,9 +292,12 @@ model Question {
   images       QuestionImage[]
   progress     UserProgress[]
   examAnswers  ExamAnswer[]
+  locations    QuestionLocation[]
+  occurrences  QuestionOccurrence[]
 
   @@index([status])
   @@index([sourceType])
+  @@index([subcategory])
 }
 
 model QuestionAnswer {
@@ -203,6 +306,11 @@ model QuestionAnswer {
   question   Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
   type       AnswerType
   text       String     @db.Text
+
+  // --- Phase 2 (optional) ---
+  shortAnswer String?  @db.Text
+  keyPoints   String[] @default([])
+  followUps   String[] @default([])
 
   approvedById String?
   approvedBy   User?     @relation("AnswerApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
@@ -226,6 +334,10 @@ model AnswerCitation {
   dateLabel String?
   url       String?
   order     Int                @default(0)
+
+  // --- Phase 2: null = legacy/unknown, true/false = checked during the protocol review ---
+  verified         Boolean?
+  verificationNote String?
 
   @@index([answerId])
 }
@@ -313,12 +425,15 @@ model UserProgress {
 }
 
 model ExamSession {
-  id          String    @id @default(cuid())
+  id          String        @id @default(cuid())
   userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   mode        ExamMode
   specialtyId String?
-  startedAt   DateTime  @default(now())
+  /// Prepared in Phase 2 for the future "learn by exam location" mode (needs a new ExamMode value then).
+  locationId  String?
+  location    ExamLocation? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  startedAt   DateTime      @default(now())
   completedAt DateTime?
 
   answers ExamAnswer[]
