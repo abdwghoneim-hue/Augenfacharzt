@@ -277,6 +277,14 @@ async function main() {
   const admin = await prisma.user.findFirst({ where: { role: "ADMIN", status: "APPROVED" }, orderBy: { createdAt: "asc" } });
   if (!admin) throw new Error("No approved ADMIN user found to own the imported rows");
 
+  // Questions that an admin already approved/published are never overwritten by a re-import.
+  const protectedRows = await prisma.question.findMany({
+    where: { canonicalCode: { not: null }, status: { in: ["APPROVED", "PUBLISHED"] } },
+    select: { id: true, canonicalCode: true },
+  });
+  const protectedIds = new Map(protectedRows.map((q) => [q.canonicalCode!, q.id]));
+  if (protectedIds.size) console.log(`Skipping ${protectedIds.size} already approved/published imported question(s): ${[...protectedIds.keys()].join(", ")}`);
+
   const importedAt = new Date();
   await prisma.$transaction(
     async (tx) => {
@@ -325,6 +333,10 @@ async function main() {
       const qIdByCode = new Map<string, string>();
       const specialtyLinks: { questionId: string; specialtyId: string }[] = [];
       for (const c of pkg.canonical_questions) {
+        if (protectedIds.has(c.canonical_id)) {
+          qIdByCode.set(c.canonical_id, protectedIds.get(c.canonical_id)!);
+          continue;
+        }
         const status = VERIFICATION[c.review_status];
         const contentStatus: ContentStatus = status === "TEXTBOOK_ONLY" || status === "MANUAL_REVIEW_REQUIRED" ? "DRAFT" : "IN_REVIEW";
         const refs = c.reference_ids.map((id) => refById.get(id)!);
@@ -397,7 +409,7 @@ async function main() {
         });
       }
       // Bulk writes (few round trips). Re-runs replace the rows that carry Phase-1 codes / belong to imported questions.
-      const importedQuestionIds = [...qIdByCode.values()];
+      const importedQuestionIds = [...qIdByCode.values()].filter((id) => !new Set(protectedIds.values()).has(id));
       await tx.questionSpecialty.deleteMany({ where: { questionId: { in: importedQuestionIds } } });
       await tx.questionSpecialty.createMany({ data: specialtyLinks });
 
@@ -425,10 +437,12 @@ async function main() {
       }
       await tx.questionLocation.deleteMany({ where: { questionId: { in: importedQuestionIds } } });
       await tx.questionLocation.createMany({
-        data: [...linkCount].map(([key, count]) => {
-          const [cq, loc] = key.split("|");
-          return { questionId: qIdByCode.get(cq)!, locationId: locIdByCode.get(loc)!, occurrenceCount: count };
-        }),
+        data: [...linkCount]
+          .filter(([key]) => !protectedIds.has(key.split("|")[0]))
+          .map(([key, count]) => {
+            const [cq, loc] = key.split("|");
+            return { questionId: qIdByCode.get(cq)!, locationId: locIdByCode.get(loc)!, occurrenceCount: count };
+          }),
       });
       await tx.auditLog.create({
         data: {
