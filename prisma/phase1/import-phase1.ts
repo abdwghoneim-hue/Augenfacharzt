@@ -323,6 +323,7 @@ async function main() {
       for (const o of pkg.question_occurrences) if (o.canonical_id) occByCq.set(o.canonical_id, [...(occByCq.get(o.canonical_id) ?? []), o]);
 
       const qIdByCode = new Map<string, string>();
+      const specialtyLinks: { questionId: string; specialtyId: string }[] = [];
       for (const c of pkg.canonical_questions) {
         const status = VERIFICATION[c.review_status];
         const contentStatus: ContentStatus = status === "TEXTBOOK_ONLY" || status === "MANUAL_REVIEW_REQUIRED" ? "DRAFT" : "IN_REVIEW";
@@ -366,9 +367,9 @@ async function main() {
         });
         qIdByCode.set(c.canonical_id, q.id);
 
-        await tx.questionSpecialty.deleteMany({ where: { questionId: q.id } });
-        await tx.questionSpecialty.create({
-          data: { questionId: q.id, specialtyId: specialtyIdByName.get(SPECIALTY_BY_LETTER[specLetter(c.specialty_id)])! },
+        specialtyLinks.push({
+          questionId: q.id,
+          specialtyId: specialtyIdByName.get(SPECIALTY_BY_LETTER[specLetter(c.specialty_id)])!,
         });
 
         // exactly one MODEL answer per imported question; replaced on re-import
@@ -395,9 +396,16 @@ async function main() {
           },
         });
       }
+      // Bulk writes (few round trips). Re-runs replace the rows that carry Phase-1 codes / belong to imported questions.
+      const importedQuestionIds = [...qIdByCode.values()];
+      await tx.questionSpecialty.deleteMany({ where: { questionId: { in: importedQuestionIds } } });
+      await tx.questionSpecialty.createMany({ data: specialtyLinks });
+
       // occurrences (all of them, including the ones without canonical question)
-      for (const o of pkg.question_occurrences) {
-        const data = {
+      await tx.questionOccurrence.deleteMany({ where: { code: { in: pkg.question_occurrences.map((o) => o.occurrence_id) } } });
+      await tx.questionOccurrence.createMany({
+        data: pkg.question_occurrences.map((o) => ({
+          code: o.occurrence_id,
           questionId: o.canonical_id ? qIdByCode.get(o.canonical_id)! : null,
           protocolId: protIdByCode.get(o.protocol_id)!,
           originalText: o.original_question,
@@ -405,9 +413,8 @@ async function main() {
           answerExcerpt: o.original_answer_excerpt,
           sourcePages: o.source_pages,
           flags: o.flags,
-        };
-        await tx.questionOccurrence.upsert({ where: { code: o.occurrence_id }, update: data, create: { code: o.occurrence_id, ...data } });
-      }
+        })),
+      });
       // question <-> location links
       const linkCount = new Map<string, number>();
       for (const o of pkg.question_occurrences) {
@@ -416,16 +423,13 @@ async function main() {
         const key = `${o.canonical_id}|${protLoc}`;
         linkCount.set(key, (linkCount.get(key) ?? 0) + 1);
       }
-      for (const [key, count] of linkCount) {
-        const [cq, loc] = key.split("|");
-        const questionId = qIdByCode.get(cq)!;
-        const locationId = locIdByCode.get(loc)!;
-        await tx.questionLocation.upsert({
-          where: { questionId_locationId: { questionId, locationId } },
-          update: { occurrenceCount: count },
-          create: { questionId, locationId, occurrenceCount: count },
-        });
-      }
+      await tx.questionLocation.deleteMany({ where: { questionId: { in: importedQuestionIds } } });
+      await tx.questionLocation.createMany({
+        data: [...linkCount].map(([key, count]) => {
+          const [cq, loc] = key.split("|");
+          return { questionId: qIdByCode.get(cq)!, locationId: locIdByCode.get(loc)!, occurrenceCount: count };
+        }),
+      });
       await tx.auditLog.create({
         data: {
           actorId: admin.id,
@@ -436,7 +440,7 @@ async function main() {
         },
       });
     },
-    { timeout: 180_000, maxWait: 30_000 },
+    { timeout: 540_000, maxWait: 30_000 },
   );
   console.log("Import applied. All imported questions are DRAFT or IN_REVIEW; nothing was published.");
 }
