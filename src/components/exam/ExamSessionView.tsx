@@ -73,22 +73,27 @@ export function ExamSessionView({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-foreground">Prüfungssimulation</h1>
-        <span className="text-sm text-muted">
+        <div>
+          <span className="font-mono text-xs uppercase tracking-wider text-muted font-medium">Prüfungsmodus</span>
+          <h1 className="text-xl font-normal tracking-tight text-foreground sm:text-2xl">Prüfungssimulation</h1>
+        </div>
+        <span className="font-mono text-xs text-muted">
           Fall {index + 1} / {questions.length}
         </span>
       </div>
 
       <Card key={question.id} className="animate-fade-in-up">
-        <p className="mb-1 text-xs font-semibold uppercase text-muted">Fall</p>
-        <p className="text-lg leading-relaxed text-foreground">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="font-mono text-xs uppercase tracking-wider text-muted font-medium">Klinischer Fall</span>
+        </div>
+        <p className="text-lg leading-relaxed text-foreground font-normal tracking-[-0.015em]">
           {question.scenarioText ?? question.originalText}
         </p>
 
         {question.images.length > 0 && (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {question.images.map((img, i) => (
-              <div key={i} className="relative aspect-video overflow-hidden rounded-md border border-border bg-gray-50">
+              <div key={i} className="relative aspect-video overflow-hidden rounded-[4px] border border-border bg-surface-elevated">
                 <Image src={img.url} alt={img.caption ?? ""} fill className="object-contain" unoptimized />
               </div>
             ))}
@@ -96,57 +101,61 @@ export function ExamSessionView({
         )}
 
         {stage === "answering" && (
-          <div className="animate-fade-in-up mt-6 space-y-3">
-            <p className="text-sm font-medium text-foreground">Ihre Antwort</p>
+          <div className="animate-fade-in-up mt-6 space-y-3 pt-4 border-t border-border/50">
+            <p className="text-xs uppercase tracking-wider font-medium text-muted">Ihre Antwort</p>
             <MicInput name="answer" value={answer} onChange={setAnswer} />
-            <Button type="button" disabled={saving} onClick={saveAndContinue}>
-              {saving ? "Wird gespeichert …" : "Antwort speichern"}
+            <Button type="button" variant="primary" disabled={saving} onClick={saveAndContinue}>
+              {saving ? "Wird gespeichert …" : "Antwort speichern & Weiter"}
             </Button>
           </div>
         )}
 
         {stage === "followups" && (
-          <div className="animate-fade-in-up mt-6 space-y-4">
-            <p className="text-sm font-semibold text-foreground">Prüfer-Nachfragen</p>
-            <ul className="list-decimal space-y-2 pl-5 text-sm text-foreground">
+          <div className="animate-fade-in-up mt-6 space-y-4 pt-4 border-t border-border/50">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs uppercase tracking-wider text-accent font-medium">
+                Prüfer-Nachfragen
+              </span>
+            </div>
+            <ul className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-foreground">
               {question.followUps.map((f, i) => (
-                <li key={i} className="animate-fade-in-up" style={{ animationDelay: `${i * 80}ms` }}>
+                <li key={i} className="animate-fade-in-up" style={{ animationDelay: `${i * 60}ms` }}>
                   {f}
                 </li>
               ))}
             </ul>
-            <Button type="button" onClick={() => setStage("revealed")}>
+            <Button type="button" variant="primary" onClick={() => setStage("revealed")}>
               Musterantwort anzeigen
             </Button>
           </div>
         )}
 
         {stage === "revealed" && (
-          <div className="animate-fade-in-up mt-6 space-y-4">
-            <div className="rounded-md border border-border bg-gray-50 p-4">
-              <p className="mb-1 text-xs font-semibold uppercase text-muted">Ihre Antwort</p>
-              <p className="whitespace-pre-wrap text-sm text-foreground">{answer || "(keine Eingabe)"}</p>
+          <div className="animate-fade-in-up mt-6 space-y-4 pt-4 border-t border-border/50">
+            <div className="rounded-[4px] border border-border bg-background p-4">
+              <p className="mb-1 text-xs uppercase tracking-wider font-medium text-muted">Ihre Antwort</p>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{answer || "(keine Eingabe)"}</p>
             </div>
-            <div className="rounded-md border border-accent/20 bg-accent-soft p-4">
-              <p className="mb-1 text-xs font-semibold uppercase text-accent">
+            <div className="rounded-[4px] border border-border bg-surface-elevated p-5">
+              <p className="mb-1 text-xs uppercase tracking-wider font-medium text-forest">
                 Freigegebene Musterantwort
               </p>
-              <p className="whitespace-pre-wrap text-sm text-foreground">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                 {question.modelAnswer ?? "Für diese Frage liegt noch keine Musterantwort vor."}
               </p>
               <Citations citations={question.citations} />
             </div>
-            <div>
-              <p className="mb-2 text-sm font-medium text-foreground">Selbsteinschätzung</p>
+            <div className="pt-2">
+              <p className="mb-2 text-xs uppercase tracking-wider font-medium text-muted">Selbsteinschätzung</p>
               <div className="flex flex-wrap gap-2">
-                <Button type="button" variant="secondary" disabled={saving} onClick={() => rate("SICHER")}>
-                  Sicher
+                <Button type="button" variant="forest" disabled={saving} onClick={() => rate("SICHER")}>
+                  ✓ Sicher
                 </Button>
-                <Button type="button" variant="secondary" disabled={saving} onClick={() => rate("TEILWEISE")}>
-                  Teilweise sicher
+                <Button type="button" variant="amber" disabled={saving} onClick={() => rate("TEILWEISE")}>
+                  ~ Teilweise sicher
                 </Button>
-                <Button type="button" variant="secondary" disabled={saving} onClick={() => rate("NICHT_GEWUSST")}>
-                  Nicht gewusst
+                <Button type="button" variant="danger" disabled={saving} onClick={() => rate("NICHT_GEWUSST")}>
+                  ✕ Nicht gewusst
                 </Button>
               </div>
             </div>
@@ -155,8 +164,7 @@ export function ExamSessionView({
       </Card>
 
       <p className="text-xs text-muted">
-        Hinweis: Die Selbsteinschätzung ist eine persönliche Lernhilfe und kein offizielles Ergebnis
-        der Facharztprüfung.
+        Hinweis: Die Selbsteinschätzung dient der persönlichen Lernfortschrittskontrolle.
       </p>
     </div>
   );

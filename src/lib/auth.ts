@@ -26,10 +26,11 @@ function generateToken(): string {
   return randomBytes(32).toString("base64url");
 }
 
-export async function createSession(userId: string) {
+export async function createSession(userId: string, rememberMe: boolean = true) {
   const token = generateToken();
   const tokenHash = hashToken(token);
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+  const ttl = rememberMe ? SESSION_TTL_MS : 24 * 60 * 60 * 1000;
+  const expiresAt = new Date(Date.now() + ttl);
 
   let ipAddress: string | undefined;
   let userAgent: string | undefined;
@@ -51,7 +52,7 @@ export async function createSession(userId: string) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    expires: expiresAt,
+    ...(rememberMe ? { expires: expiresAt } : {}),
   });
 
   return token;

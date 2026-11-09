@@ -20,16 +20,19 @@ export function NavLink({
     <Link
       href={href}
       className={cn(
-        "relative py-1 transition-colors duration-150",
-        tone === "admin" ? "text-accent/80 hover:text-accent" : "text-foreground/80 hover:text-accent",
-        isActive && "text-accent",
+        "relative py-1 text-xs font-normal tracking-[-0.01em] transition-colors duration-150",
+        isActive
+          ? "text-foreground font-medium"
+          : tone === "admin"
+            ? "text-muted hover:text-foreground"
+            : "text-muted hover:text-foreground",
       )}
     >
       {children}
       <span
         className={cn(
-          "absolute -bottom-0.5 left-0 h-0.5 rounded-full bg-accent transition-all duration-300 ease-out",
-          isActive ? "w-full" : "w-0",
+          "absolute -bottom-1 left-0 h-[1.5px] bg-accent transition-all duration-200 ease-out",
+          isActive ? "w-full opacity-100" : "w-0 opacity-0",
         )}
       />
     </Link>

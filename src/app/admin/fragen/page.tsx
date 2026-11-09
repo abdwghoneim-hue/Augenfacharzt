@@ -41,18 +41,21 @@ export default async function QuestionsAdminPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Fragenverwaltung</h1>
-          <p className="mt-1 text-sm text-muted">{questions.length} Fragen</p>
+          <div className="font-mono text-xs uppercase tracking-wider text-muted font-medium mb-1">
+            Katalogverwaltung
+          </div>
+          <h1 className="text-2xl font-normal tracking-tight text-foreground sm:text-3xl">Fragenverwaltung</h1>
+          <p className="mt-1 text-sm text-muted-secondary">{questions.length} Fragen im Gesamtbestand</p>
         </div>
         <Link href="/admin/fragen/neu">
-          <Button type="button">+ Neue Frage</Button>
+          <Button type="button" variant="primary">+ Neue Frage erfassen</Button>
         </Link>
       </div>
 
-      <Card>
-        <form className="flex flex-wrap gap-4" method="get">
+      <Card className="p-4">
+        <form className="flex flex-wrap items-end gap-4" method="get">
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Status</label>
+            <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-muted">Status</label>
             <Select name="status" defaultValue={params.status ?? "ALLE"} className="w-48">
               {STATUS_OPTIONS.map((s) => (
                 <option key={s} value={s}>
@@ -70,7 +73,7 @@ export default async function QuestionsAdminPage({
             </Select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Fachgebiet</label>
+            <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-muted">Fachgebiet</label>
             <Select name="specialty" defaultValue={params.specialty ?? ""} className="w-64">
               <option value="">Alle</option>
               {specialties.map((s) => (
@@ -80,7 +83,7 @@ export default async function QuestionsAdminPage({
               ))}
             </Select>
           </div>
-          <div className="flex items-end">
+          <div>
             <Button type="submit" variant="secondary">
               Filtern
             </Button>
@@ -90,20 +93,20 @@ export default async function QuestionsAdminPage({
 
       <Card className="overflow-x-auto p-0">
         <table className="w-full text-sm">
-          <thead className="border-b border-border bg-gray-50 text-left text-xs uppercase text-muted">
+          <thead className="border-b border-border bg-surface-elevated/60 text-left font-mono text-[11px] uppercase tracking-wider text-muted">
             <tr>
               <th className="px-4 py-3">Frage</th>
               <th className="px-4 py-3">Fachgebiete</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Quelle</th>
-              <th className="px-4 py-3" />
+              <th className="px-4 py-3 text-right">Aktion</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border/60">
             {questions.map((q) => (
-              <tr key={q.id} className="align-top">
-                <td className="max-w-md px-4 py-3">
-                  <Link href={`/admin/fragen/${q.id}`} className="text-foreground hover:text-accent">
+              <tr key={q.id} className="align-top hover:bg-surface-elevated/30 transition-colors">
+                <td className="max-w-md px-4 py-3.5">
+                  <Link href={`/admin/fragen/${q.id}`} className="font-normal text-foreground hover:text-accent leading-relaxed">
                     {q.originalText.slice(0, 140)}
                     {q.originalText.length > 140 ? "…" : ""}
                   </Link>
@@ -113,25 +116,25 @@ export default async function QuestionsAdminPage({
                     </div>
                   )}
                 </td>
-                <td className="px-4 py-3 text-muted">
+                <td className="px-4 py-3.5 text-xs text-muted font-mono">
                   {q.specialties.map((s) => s.specialty.name).join(", ") || "—"}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3.5">
                   <ContentStatusBadge status={q.status} />
                 </td>
-                <td className="px-4 py-3 text-muted">
+                <td className="px-4 py-3.5 font-mono text-xs text-muted">
                   {q.sourceType === "IMPORT" ? "Import" : "Manuell"}
                 </td>
-                <td className="px-4 py-3 text-right">
-                  <Link href={`/admin/fragen/${q.id}`} className="text-accent hover:underline">
-                    Bearbeiten
+                <td className="px-4 py-3.5 text-right">
+                  <Link href={`/admin/fragen/${q.id}`} className="font-mono text-xs text-accent hover:underline">
+                    Bearbeiten →
                   </Link>
                 </td>
               </tr>
             ))}
             {questions.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted">
+                <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted">
                   Keine Fragen gefunden.
                 </td>
               </tr>

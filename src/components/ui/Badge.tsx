@@ -1,13 +1,13 @@
 import { cn } from "@/lib/cn";
 
-type Tone = "neutral" | "accent" | "success" | "warning" | "danger";
+export type Tone = "neutral" | "accent" | "success" | "warning" | "danger";
 
 const toneClasses: Record<Tone, string> = {
-  neutral: "bg-gray-100 text-gray-700",
-  accent: "bg-accent-soft text-accent",
-  success: "bg-success-soft text-success",
-  warning: "bg-warning-soft text-warning",
-  danger: "bg-danger-soft text-danger",
+  neutral: "bg-surface-elevated text-foreground border border-border/60",
+  accent: "bg-accent-soft text-accent border border-accent/20",
+  success: "bg-success-soft text-success border border-success/20",
+  warning: "bg-warning-soft text-warning border border-warning/20",
+  danger: "bg-danger-soft text-danger border border-danger/20",
 };
 
 export function Badge({
@@ -18,7 +18,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors duration-200",
+        "inline-flex items-center rounded-[var(--radius-badge)] px-2 py-0.5 text-xs font-normal tracking-[-0.01em] transition-colors duration-150",
         toneClasses[tone],
         className,
       )}

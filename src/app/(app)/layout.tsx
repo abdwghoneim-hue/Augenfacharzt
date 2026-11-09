@@ -1,14 +1,7 @@
 import { requireApprovedUser } from "@/lib/guards";
-import { Nav } from "@/components/Nav";
-import { Footer } from "@/components/Footer";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireApprovedUser();
-  return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Nav user={user} />
-      <main className="animate-fade-in mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
-      <Footer />
-    </div>
-  );
+  return <AppShell user={user}>{children}</AppShell>;
 }

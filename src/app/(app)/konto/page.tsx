@@ -4,6 +4,7 @@ import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { UserStatusBadge, Badge } from "@/components/ui/Badge";
 import { ChangePasswordForm } from "@/components/account/ChangePasswordForm";
 import { DeleteAccountForm } from "@/components/account/DeleteAccountForm";
+import { ThemeSelector } from "@/components/account/ThemeSelector";
 
 export default async function KontoPage() {
   const user = await requireApprovedUser();
@@ -20,6 +21,17 @@ export default async function KontoPage() {
         <div className="mt-2 flex gap-2">
           <UserStatusBadge status={user.status} />
           {user.role === "ADMIN" && <Badge tone="accent">Administrator</Badge>}
+        </div>
+      </Card>
+
+      {/* Visual Identity / Theme Switcher */}
+      <Card>
+        <CardTitle>Erscheinungsbild & Visuelle Identität</CardTitle>
+        <CardDescription>
+          Wählen Sie zwischen drei maßgeschneiderten Design-Systemen: Cursor Atelier, Auros Liquid Abyss oder Discord Cosmic.
+        </CardDescription>
+        <div className="mt-4">
+          <ThemeSelector />
         </div>
       </Card>
 
@@ -41,7 +53,7 @@ export default async function KontoPage() {
         </CardDescription>
         <a
           href="/konto/export"
-          className="mt-4 inline-flex items-center rounded-md border border-border bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-gray-50"
+          className="mt-4 inline-flex items-center rounded-[var(--radius-button)] border border-border bg-surface-elevated px-4 py-2 text-sm font-medium text-foreground hover:opacity-90 transition-opacity"
         >
           Meine Daten exportieren (JSON)
         </a>

@@ -91,7 +91,7 @@ export default async function ImportBatchPage({
         <Card>
           <CardTitle>Extrahierter Rohtext</CardTitle>
           <CardDescription>Zur manuellen Kontrolle, insbesondere bei nicht erkannten Fragen.</CardDescription>
-          <pre className="mt-4 max-h-96 overflow-auto whitespace-pre-wrap rounded-md bg-gray-50 p-4 text-xs text-foreground">
+          <pre className="mt-4 max-h-96 overflow-auto whitespace-pre-wrap rounded-[var(--radius-button)] border border-border bg-surface-recessed p-4 text-xs text-foreground font-mono">
             {batch.rawText}
           </pre>
         </Card>

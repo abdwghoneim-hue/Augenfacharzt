@@ -20,15 +20,19 @@ export default async function ImportAdminPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Dokumente hochladen</h1>
-        <p className="mt-1 text-sm text-muted">
-          Fragensammlungen importieren. Erkannte Fragen werden als Entwürfe angelegt und müssen vor
+        <div className="font-mono text-xs uppercase tracking-wider text-muted font-medium mb-1">
+          Dokumentenimport
+        </div>
+        <h1 className="text-2xl font-normal tracking-tight text-foreground sm:text-3xl">Dokumente hochladen</h1>
+        <p className="mt-1 text-sm text-muted-secondary">
+          Fragensammlungen importieren (PDF, DOCX, TXT, XLSX). Erkannte Fragen werden als Entwürfe angelegt und müssen vor
           Veröffentlichung geprüft werden.
         </p>
       </div>
 
       <Card>
         <CardTitle>Neue Datei importieren</CardTitle>
+        <CardDescription>Unterstützt werden Textprotokolle und Tabellen bis 20 MB.</CardDescription>
         <div className="mt-4">
           <ImportUploadForm />
         </div>
@@ -36,17 +40,17 @@ export default async function ImportAdminPage() {
 
       <Card>
         <CardTitle>Bisherige Importe</CardTitle>
-        <CardDescription>Für mehrere Dateien: Vorgang pro Datei wiederholen.</CardDescription>
-        <ul className="mt-4 divide-y divide-border">
+        <CardDescription>Historie aller verarbeiteten Fragensammlungen.</CardDescription>
+        <ul className="mt-4 divide-y divide-border/60">
           {batches.map((batch) => {
             const status = STATUS_LABELS[batch.status] ?? { label: batch.status, tone: "neutral" as const };
             return (
-              <li key={batch.id} className="flex items-center justify-between py-3">
+              <li key={batch.id} className="flex items-center justify-between py-3 hover:bg-surface-elevated/30 transition-colors">
                 <div>
-                  <Link href={`/admin/import/${batch.id}`} className="text-sm text-foreground hover:text-accent">
+                  <Link href={`/admin/import/${batch.id}`} className="text-sm font-normal text-foreground hover:text-accent">
                     {batch.fileName}
                   </Link>
-                  <p className="text-xs text-muted">
+                  <p className="font-mono text-xs text-muted mt-0.5">
                     {batch._count.questions} Fragen erkannt ·{" "}
                     {new Date(batch.uploadedAt).toLocaleString("de-DE")}
                   </p>

@@ -89,6 +89,7 @@ const loginSchema = z.object({
   username: z.string().trim().min(1, "Bitte Benutzernamen eingeben."),
   password: z.string().min(1, "Bitte Passwort eingeben."),
   next: z.string().optional(),
+  remember: z.string().optional(),
 });
 
 export async function loginAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -96,11 +97,12 @@ export async function loginAction(_prev: ActionState, formData: FormData): Promi
     username: formData.get("username"),
     password: formData.get("password"),
     next: formData.get("next") ?? undefined,
+    remember: formData.get("remember") ?? undefined,
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
   }
-  const { username, password, next } = parsed.data;
+  const { username, password, next, remember } = parsed.data;
 
   const key = await clientKey(`login:${username.toLowerCase()}`);
   if (isRateLimited(key)) {
@@ -121,7 +123,8 @@ export async function loginAction(_prev: ActionState, formData: FormData): Promi
     return { error: messages[user.status] ?? "Ihr Konto hat noch keinen Zugriff." };
   }
 
-  await createSession(user.id);
+  const shouldRemember = remember === "on" || remember === "true" || remember === "1";
+  await createSession(user.id, shouldRemember);
   redirect(next && next.startsWith("/") ? next : "/");
 }
 

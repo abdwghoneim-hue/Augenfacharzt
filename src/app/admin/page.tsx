@@ -24,47 +24,62 @@ export default async function AdminDashboardPage() {
   return (
     <div className="animate-fade-in-up space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Administrator-Übersicht</h1>
-        <p className="mt-1 text-sm text-muted">Status der Inhaltsverwaltung auf einen Blick.</p>
+        <div className="font-mono text-xs uppercase tracking-wider text-muted font-medium mb-1">
+          Administration / Übersicht
+        </div>
+        <h1 className="text-2xl font-normal tracking-tight text-foreground sm:text-3xl">Administrator-Übersicht</h1>
+        <p className="mt-1 text-sm text-muted-secondary">Status der Inhaltsverwaltung und Registrierungen auf einen Blick.</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link href="/admin/benutzer">
-          <Card className="h-full cursor-pointer hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-md">
-            <div className="inline-flex rounded-lg bg-warning-soft p-2.5 text-warning">
-              <Users className="h-5 w-5" />
+          <Card className="h-full cursor-pointer hover:border-foreground/20 hover:shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs uppercase tracking-wider text-muted">Registrierungen</span>
+              <div className="rounded-[3px] bg-warning-soft p-1.5 text-warning">
+                <Users className="h-4 w-4" />
+              </div>
             </div>
-            <p className="mt-3 text-sm text-muted">Ausstehende Registrierungen</p>
-            <p className="text-2xl font-semibold text-foreground">{pendingUsers}</p>
+            <p className="mt-3 text-2xl font-normal tracking-tight text-foreground">{pendingUsers}</p>
+            <p className="mt-1 text-xs text-muted">Ausstehende Freischaltungen</p>
           </Card>
         </Link>
         <Link href="/admin/freigabe">
-          <Card className="h-full cursor-pointer hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-md">
-            <div className="inline-flex rounded-lg bg-accent-soft p-2.5 text-accent">
-              <FileQuestion className="h-5 w-5" />
+          <Card className="h-full cursor-pointer hover:border-foreground/20 hover:shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs uppercase tracking-wider text-muted">Fragenprüfung</span>
+              <div className="rounded-[3px] bg-accent-soft p-1.5 text-accent">
+                <FileQuestion className="h-4 w-4" />
+              </div>
             </div>
-            <p className="mt-3 text-sm text-muted">Fragen zur Prüfung</p>
-            <p className="text-2xl font-semibold text-foreground">{questionsInReview}</p>
+            <p className="mt-3 text-2xl font-normal tracking-tight text-foreground">{questionsInReview}</p>
+            <p className="mt-1 text-xs text-muted">Fragen zur Prüfung</p>
           </Card>
         </Link>
         <Link href="/admin/freigabe">
-          <Card className="h-full cursor-pointer hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-md">
-            <div className="inline-flex rounded-lg bg-secondary-soft p-2.5 text-secondary">
-              <ImageIcon className="h-5 w-5" />
+          <Card className="h-full cursor-pointer hover:border-foreground/20 hover:shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs uppercase tracking-wider text-muted">Bilderfreigabe</span>
+              <div className="rounded-[3px] bg-secondary-soft p-1.5 text-secondary">
+                <ImageIcon className="h-4 w-4" />
+              </div>
             </div>
-            <p className="mt-3 text-sm text-muted">Bilder zur Freigabe</p>
-            <p className="text-2xl font-semibold text-foreground">{imagesInReview}</p>
+            <p className="mt-3 text-2xl font-normal tracking-tight text-foreground">{imagesInReview}</p>
+            <p className="mt-1 text-xs text-muted">Bilder zur Freigabe</p>
           </Card>
         </Link>
         <Link href="/admin/fragen">
-          <Card className="h-full cursor-pointer hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-md">
-            <div className="inline-flex rounded-lg bg-success-soft p-2.5 text-success">
-              <CheckCircle2 className="h-5 w-5" />
+          <Card className="h-full cursor-pointer hover:border-foreground/20 hover:shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs uppercase tracking-wider text-muted">Katalog</span>
+              <div className="rounded-[3px] bg-success-soft p-1.5 text-success">
+                <CheckCircle2 className="h-4 w-4" />
+              </div>
             </div>
-            <p className="mt-3 text-sm text-muted">Veröffentlicht / Entwurf</p>
-            <p className="text-2xl font-semibold text-foreground">
-              {publishedCount} <span className="text-base font-normal text-muted">/ {draftCount}</span>
+            <p className="mt-3 text-2xl font-normal tracking-tight text-foreground">
+              {publishedCount} <span className="text-base text-muted">/ {draftCount}</span>
             </p>
+            <p className="mt-1 text-xs text-muted">Veröffentlicht / Entwurf</p>
           </Card>
         </Link>
       </div>
@@ -73,24 +88,24 @@ export default async function AdminDashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Zuletzt importierte Dokumente</CardTitle>
-            <CardDescription>Die letzten 5 Importe.</CardDescription>
+            <CardDescription>Die letzten 5 Dateiimporte im System.</CardDescription>
           </div>
-          <div className="rounded-lg bg-accent-soft p-2.5 text-accent">
-            <FileUp className="h-5 w-5" />
+          <div className="rounded-[3px] bg-surface-elevated p-2 text-foreground">
+            <FileUp className="h-4 w-4" />
           </div>
         </div>
         {recentBatches.length > 0 ? (
-          <ul className="mt-4 divide-y divide-border">
+          <ul className="mt-4 divide-y divide-border/60">
             {recentBatches.map((b) => (
               <li key={b.id} className="flex items-center justify-between py-3">
-                <Link href={`/admin/import/${b.id}`} className="text-sm text-foreground hover:text-accent">
+                <Link href={`/admin/import/${b.id}`} className="text-sm font-normal text-foreground hover:text-accent">
                   {b.fileName}
                 </Link>
                 <div className="flex items-center gap-2">
                   <Badge tone={b.status === "REVIEWED" ? "success" : b.status === "FAILED" ? "danger" : "warning"}>
                     {b.status}
                   </Badge>
-                  <span className="text-xs text-muted">
+                  <span className="font-mono text-xs text-muted">
                     {new Date(b.uploadedAt).toLocaleDateString("de-DE")}
                   </span>
                 </div>

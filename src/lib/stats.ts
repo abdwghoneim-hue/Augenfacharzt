@@ -2,19 +2,17 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 
 export async function getHomeStats(userId: string) {
-  const [totalPublished, reviewed, dueCount, weakSpecialties] = await Promise.all([
-    prisma.question.count({ where: { status: "PUBLISHED" } }),
-    prisma.userProgress.count({
-      where: { userId, confidence: { not: null }, question: { status: "PUBLISHED" } },
-    }),
-    prisma.userProgress.count({
-      where: { userId, nextReviewAt: { lte: new Date() }, question: { status: "PUBLISHED" } },
-    }),
-    prisma.userProgress.groupBy({
-      by: ["questionId"],
-      where: { userId, confidence: "NICHT_GEWUSST", question: { status: "PUBLISHED" } },
-    }),
-  ]);
+  const totalPublished = await prisma.question.count({ where: { status: "PUBLISHED" } });
+  const reviewed = await prisma.userProgress.count({
+    where: { userId, confidence: { not: null }, question: { status: "PUBLISHED" } },
+  });
+  const dueCount = await prisma.userProgress.count({
+    where: { userId, nextReviewAt: { lte: new Date() }, question: { status: "PUBLISHED" } },
+  });
+  const weakSpecialties = await prisma.userProgress.groupBy({
+    by: ["questionId"],
+    where: { userId, confidence: "NICHT_GEWUSST", question: { status: "PUBLISHED" } },
+  });
 
   const weakQuestionIds = weakSpecialties.map((row) => row.questionId);
   let weakTopics: { name: string; count: number }[] = [];
@@ -54,28 +52,27 @@ export type SpecialtyOverview = {
 export async function getSpecialtyOverview(userId: string): Promise<SpecialtyOverview[]> {
   const specialties = await prisma.specialty.findMany({ orderBy: { order: "asc" } });
 
-  const rows = await Promise.all(
-    specialties.map(async (s) => {
-      const total = await prisma.question.count({
-        where: { status: "PUBLISHED", specialties: { some: { specialtyId: s.id } } },
-      });
-      const reviewed = await prisma.userProgress.count({
-        where: {
-          userId,
-          confidence: { not: null },
-          question: { status: "PUBLISHED", specialties: { some: { specialtyId: s.id } } },
-        },
-      });
-      return {
-        id: s.id,
-        slug: s.slug,
-        name: s.name,
-        total,
-        reviewed,
-        percent: total > 0 ? Math.round((reviewed / total) * 100) : 0,
-      };
-    }),
-  );
+  const rows: SpecialtyOverview[] = [];
+  for (const s of specialties) {
+    const total = await prisma.question.count({
+      where: { status: "PUBLISHED", specialties: { some: { specialtyId: s.id } } },
+    });
+    const reviewed = await prisma.userProgress.count({
+      where: {
+        userId,
+        confidence: { not: null },
+        question: { status: "PUBLISHED", specialties: { some: { specialtyId: s.id } } },
+      },
+    });
+    rows.push({
+      id: s.id,
+      slug: s.slug,
+      name: s.name,
+      total,
+      reviewed,
+      percent: total > 0 ? Math.round((reviewed / total) * 100) : 0,
+    });
+  }
 
   return rows;
 }

@@ -1,56 +1,226 @@
 @import "tailwindcss";
 
 /*
- * Refined medical-education theme — fixed light (deliberately NOT
- * dark-mode-first). Soft slate-white background, deep medical blue as the
- * primary color, teal as a secondary accent used sparingly (specialty
- * icons, secondary stats), light sky blue as a quiet highlight tint.
+ * =============================================================================
+ * Identity 1: Cursor ("Warm parchment atelier lit by embers")
+ * Light editorial theme built on warm cream, paper-like layering,
+ * hairline stone borders, 4px radii, and ember/amber accents.
+ * =============================================================================
  */
-:root {
-  --background: #f8fafc;
-  --surface: #ffffff;
-  --foreground: #0f172a;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --accent: #1e40af;
-  --accent-hover: #1a3691;
-  --accent-soft: #e0f2fe;
-  --accent-light: #3b82f6;
-  --secondary: #0d9488;
-  --secondary-soft: #ccfbf1;
-  --danger: #dc2626;
-  --danger-soft: #fee2e2;
-  --success: #16a34a;
-  --success-soft: #dcfce7;
-  --warning: #d97706;
-  --warning-soft: #fef3c7;
+:root,
+[data-theme="cursor"] {
+  /* Neutral Canvas & Surfaces */
+  --background: #f7f7f4;       /* Parchment: warm cream page canvas */
+  --surface: #f2f1ed;          /* Bone: card surfaces and containers */
+  --surface-elevated: #e6e5e0; /* Linen: secondary buttons and elevated elements */
+  --surface-recessed: #ecebe6; /* Recessed inputs & panels */
+  --foreground: #26251e;       /* Ink: warm-tinted near-black primary text */
+  --muted: #7a7974;            /* Ash: tertiary body text, subdued labels */
+  --muted-secondary: #84847e;  /* Driftwood: secondary body text */
+  --muted-tertiary: #a1a19f;   /* Mist: helper captions */
+  --border: #cdcdc9;           /* Stone: hairline warm-tinted 1px rules */
+  --border-subtle: rgba(38, 37, 30, 0.08); /* Transparent ink rule */
+
+  /* Accents */
+  --accent: #f54e00;           /* Ember: orange text accent for links and tags */
+  --accent-hover: #d94400;     /* Deeper ember */
+  --accent-soft: #ffefe5;      /* Warm ember soft tint */
+  --accent-light: #f54e00;
+
+  --secondary: #c08532;        /* Amber: warm chromatic actions and icons */
+  --secondary-hover: #a87127;
+  --secondary-soft: #fbf3e6;
+
+  /* Status Colors */
+  --forest: #34785c;           /* Forest: green action color for filled buttons/tags */
+  --verdant: #1f8a65;          /* Verdant: green text accent */
+  --success: #34785c;
+  --success-soft: #eaf4ee;
+
+  --crimson: #cf2d56;          /* Crimson: red text accent / danger */
+  --danger: #cf2d56;
+  --danger-soft: #fdeef2;
+
+  --warning: #c08532;          /* Amber */
+  --warning-soft: #fbf3e6;
+
+  /* Selection highlight */
+  --selection: #8bc4f8;        /* Soft blue browser text selection */
+
+  /* Radii & Elevation */
+  --radius-card: 4px;
+  --radius-button: 4px;
+  --radius-badge: 3px;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-elevated: 0 4px 12px rgba(38, 37, 30, 0.06), 0 1px 3px rgba(38, 37, 30, 0.04);
+}
+
+/*
+ * =============================================================================
+ * Identity 2: Auros ("Abyssal terminal with bioluminescent data orbs")
+ * Dark cryptographic terminal with Liquid Abyss canvas (#012624),
+ * Liquid Kelp card panels (#003734), Platinum white typography (#ffffff),
+ * Lavender Phosphor stats (#fde9ff), Bioluminescent teal accents,
+ * 16px card radii, and no drop shadows (depth via layered water tones).
+ * =============================================================================
+ */
+[data-theme="auros"] {
+  /* Liquid Abyss Canvas & Surfaces */
+  --background: #012624;       /* Liquid Abyss: deep dark teal canvas */
+  --surface: #003734;          /* Liquid Kelp: raised card surface */
+  --surface-elevated: #014743; /* Elevated button/hover surface */
+  --surface-recessed: #011d1c; /* Liquid Deep: recessed sub-panels & inputs */
+  --foreground: #ffffff;       /* Platinum: pure white headings & text */
+  --muted: #bbc7c6;            /* Silver Mist: secondary text & descriptions */
+  --muted-secondary: #9aa5a4;  /* Medium mist */
+  --muted-tertiary: #707777;   /* Slate Deep: subdued captions */
+  --border: rgba(187, 199, 198, 0.22); /* Hairline mist border */
+  --border-subtle: rgba(255, 255, 255, 0.08); /* Ultra-subtle divider */
+
+  /* Accents */
+  --accent: #fde9ff;           /* Lavender Phosphor: glowing stats & punctuation */
+  --accent-hover: #ffffff;
+  --accent-soft: rgba(253, 233, 255, 0.12); /* Pale lavender glow */
+  --accent-light: #edfffe;     /* Liquid Mist */
+
+  --secondary: #00827c;        /* Bioluminescent Teal */
+  --secondary-hover: #009d96;
+  --secondary-soft: rgba(0, 130, 124, 0.25);
+
+  /* Status Colors */
+  --forest: #00a89d;           /* Bioluminescent aqua/emerald */
+  --verdant: #2dd4bf;          /* Mint aqua */
+  --success: #2dd4bf;
+  --success-soft: rgba(45, 212, 191, 0.15);
+
+  --crimson: #fb7185;          /* Rose red */
+  --danger: #fb7185;
+  --danger-soft: rgba(251, 113, 133, 0.15);
+
+  --warning: #fbbf24;          /* Warm gold */
+  --warning-soft: rgba(251, 191, 36, 0.15);
+
+  /* Selection highlight */
+  --selection: #00827c;
+
+  /* Radii & Elevation (Auros 16px cards, 6px buttons, tone-based elevation) */
+  --radius-card: 16px;
+  --radius-button: 6px;
+  --radius-badge: 6px;
+  --shadow-card: none;
+  --shadow-elevated: none;
+}
+
+/*
+ * =============================================================================
+ * Identity 3: Discord ("Cosmic gaming environment with Blurple accents")
+ * Dark atmospheric environment with Not Quite Black / Canvas (#1e1f22),
+ * Dark Charcoal surfaces (#2b2d31 / #2c2f33), Blurple (#5865f2) CTAs & active states,
+ * Spring Green (#57f287) & Cerulean (#00b0f4) accents, pure white typography,
+ * 12px card radii, and 8px button radii.
+ * =============================================================================
+ */
+[data-theme="discord"] {
+  /* Discord Canvas & Surfaces */
+  --background: #1e1f22;          /* Discord canvas: Not Quite Black / Canvas */
+  --surface: #2b2d31;             /* Discord Card / Dark Charcoal */
+  --surface-elevated: #313338;    /* Elevated panels & hover */
+  --surface-recessed: #111214;    /* Recessed inputs & channel panels */
+  --foreground: #ffffff;          /* Snow: pure white headings & active text */
+  --muted: #949ba4;               /* Greyple: secondary body & label text */
+  --muted-secondary: #80848e;     /* Subdued text */
+  --muted-tertiary: #5c5f66;      /* Dim text */
+  --border: #383a40;              /* Hairline dark border */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+
+  /* Accents */
+  --accent: #5865f2;              /* Blurple: primary CTA & brand highlight */
+  --accent-hover: #4752c4;        /* Dark Blurple */
+  --accent-soft: rgba(88, 101, 242, 0.15); /* Blurple glow */
+  --accent-light: #8891f2;        /* Hover Blurple */
+
+  --secondary: #57f287;           /* Spring Green */
+  --secondary-hover: #45c46d;
+  --secondary-soft: rgba(87, 242, 135, 0.15);
+
+  /* Status Colors */
+  --forest: #57f287;              /* Spring Green */
+  --verdant: #57f287;
+  --success: #57f287;
+  --success-soft: rgba(87, 242, 135, 0.15);
+
+  --crimson: #ed4245;             /* Discord Red */
+  --danger: #ed4245;
+  --danger-soft: rgba(237, 66, 69, 0.15);
+
+  --warning: #fda220;             /* Ember Orange */
+  --warning-soft: rgba(253, 162, 32, 0.15);
+
+  /* Selection highlight */
+  --selection: #5865f2;
+
+  /* Radii & Elevation */
+  --radius-card: 12px;
+  --radius-button: 8px;
+  --radius-badge: 6px;
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-recessed: var(--surface-recessed);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
+  --color-muted-secondary: var(--muted-secondary);
+  --color-muted-tertiary: var(--muted-tertiary);
   --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
   --color-accent-light: var(--accent-light);
   --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
   --color-secondary-soft: var(--secondary-soft);
+  --color-forest: var(--forest);
+  --color-verdant: var(--verdant);
+  --color-crimson: var(--crimson);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
+
+  --radius-card: var(--radius-card);
+  --radius-button: var(--radius-button);
+  --radius-badge: var(--radius-badge);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
-  --animate-fade-in: fade-in 0.5s ease-out both;
-  --animate-fade-in-up: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-scale-in: scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-float: float 6s ease-in-out infinite;
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-fade-in-up: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-scale-in: scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+::selection {
+  background-color: var(--selection);
+  color: var(--foreground);
+}
+
+[data-theme="auros"] ::selection {
+  background-color: #00827c;
+  color: #ffffff;
+}
+
+[data-theme="discord"] ::selection {
+  background-color: #5865f2;
+  color: #ffffff;
 }
 
 @keyframes fade-in {
@@ -65,7 +235,7 @@
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -76,7 +246,7 @@
 @keyframes scale-in {
   from {
     opacity: 0;
-    transform: scale(0.96);
+    transform: scale(0.98);
   }
   to {
     opacity: 1;
@@ -84,27 +254,30 @@
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(12px, -16px);
-  }
-}
-
 html {
   color-scheme: light;
+}
+
+html[data-theme="auros"],
+html[data-theme="discord"] {
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  letter-spacing: -0.011em;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-/* Respect users who've asked for reduced motion. */
+/* Headings whisper at weight 400/500 with tight letter-spacing */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--foreground);
+  letter-spacing: -0.022em;
+}
+
+/* Respect users who've asked for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

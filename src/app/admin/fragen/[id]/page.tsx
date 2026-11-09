@@ -135,7 +135,7 @@ export default async function QuestionDetailPage({
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {question.images.map((img) => (
             <div key={img.id} className="rounded-md border border-border p-3">
-              <div className="relative mb-2 aspect-video overflow-hidden rounded bg-gray-100">
+              <div className="relative mb-2 aspect-video overflow-hidden rounded-[var(--radius-button)] bg-surface-elevated">
                 <Image src={urlFor(img.filePath)} alt={img.caption ?? ""} fill className="object-contain" unoptimized />
               </div>
               <p className="text-xs text-muted">{img.caption || "Keine Beschreibung"}</p>

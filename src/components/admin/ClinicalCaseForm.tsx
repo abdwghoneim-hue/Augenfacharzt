@@ -46,7 +46,7 @@ export function ClinicalCaseForm({
                 type="text"
                 name="followUps"
                 defaultValue={value}
-                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
+                className="w-full rounded-[var(--radius-button)] border border-border bg-surface-recessed px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-foreground focus:border-foreground"
                 placeholder={`Nachfrage ${index + 1}`}
               />
               {items.length > 1 && (
