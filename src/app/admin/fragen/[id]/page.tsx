@@ -10,6 +10,7 @@ import { AnswerForm } from "@/components/admin/AnswerForm";
 import { ClinicalCaseForm } from "@/components/admin/ClinicalCaseForm";
 import { ImageUploadForm } from "@/components/admin/ImageUploadForm";
 import { StatusControl } from "@/components/admin/StatusControl";
+import { ReviewPanel, VerificationBadge } from "@/components/admin/ReviewPanel";
 import { deleteQuestionAction, deleteQuestionImageAction, deleteClinicalCaseAction } from "@/app/actions/questions";
 
 export default async function QuestionDetailPage({
@@ -23,10 +24,12 @@ export default async function QuestionDetailPage({
       where: { id },
       include: {
         specialties: true,
-        answers: true,
+        answers: { include: { citations: { orderBy: { order: "asc" } } } },
         images: true,
         clinicalCase: { include: { followUps: { orderBy: { order: "asc" } } } },
         importBatch: true,
+        locations: { include: { location: true }, orderBy: { location: { order: "asc" } } },
+        occurrences: { include: { protocol: { include: { location: true } } }, orderBy: { code: "asc" } },
       },
     }),
     prisma.specialty.findMany({ orderBy: { order: "asc" } }),
@@ -45,10 +48,13 @@ export default async function QuestionDetailPage({
           <div className="mt-2 flex items-center gap-2">
             <ContentStatusBadge status={question.status} />
             <Badge tone="neutral">{question.sourceType === "IMPORT" ? "Import" : "Manuell"}</Badge>
+            <VerificationBadge status={question.verificationStatus} />
           </div>
         </div>
         <StatusControl entityType="Question" id={question.id} status={question.status} />
       </div>
+
+      <ReviewPanel question={question} answer={modelAnswer} />
 
       {question.sourceType === "IMPORT" && (
         <Card className="bg-accent-soft/40">
