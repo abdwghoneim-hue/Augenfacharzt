@@ -5,23 +5,29 @@ import { Card } from "@/components/ui/Card";
 import { ContentStatusBadge, Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Field";
+import { VerificationBadge, VERIFICATION_LABELS } from "@/components/admin/ReviewPanel";
 
 const STATUS_OPTIONS = ["ALLE", "DRAFT", "IN_REVIEW", "APPROVED", "PUBLISHED"] as const;
 
 export default async function QuestionsAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; specialty?: string }>;
+  searchParams: Promise<{ status?: string; specialty?: string; verification?: string; location?: string }>;
 }) {
   const params = await searchParams;
   const statusFilter = params.status && params.status !== "ALLE" ? params.status : undefined;
   const specialtyFilter = params.specialty || undefined;
+  const verificationFilter =
+    params.verification && params.verification in VERIFICATION_LABELS ? params.verification : undefined;
+  const locationFilter = params.location || undefined;
 
-  const [questions, specialties] = await Promise.all([
+  const [questions, specialties, locations] = await Promise.all([
     prisma.question.findMany({
       where: {
         ...(statusFilter ? { status: statusFilter as never } : {}),
         ...(specialtyFilter ? { specialties: { some: { specialtyId: specialtyFilter } } } : {}),
+        ...(verificationFilter ? { verificationStatus: verificationFilter as never } : {}),
+        ...(locationFilter ? { locations: { some: { locationId: locationFilter } } } : {}),
       },
       include: {
         specialties: { include: { specialty: true } },
@@ -31,6 +37,7 @@ export default async function QuestionsAdminPage({
       orderBy: { createdAt: "desc" },
     }),
     prisma.specialty.findMany({ orderBy: { order: "asc" } }),
+    prisma.examLocation.findMany({ orderBy: { order: "asc" } }),
   ]);
 
   const duplicateIds = findDuplicateQuestionIds(
@@ -84,6 +91,28 @@ export default async function QuestionsAdminPage({
             </Select>
           </div>
           <div>
+            <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-muted">Prüfstatus</label>
+            <Select name="verification" defaultValue={params.verification ?? ""} className="w-56">
+              <option value="">Alle</option>
+              {Object.entries(VERIFICATION_LABELS).map(([value, { label }]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-muted">Prüfungsort</label>
+            <Select name="location" defaultValue={params.location ?? ""} className="w-64">
+              <option value="">Alle</option>
+              {locations.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div>
             <Button type="submit" variant="secondary">
               Filtern
             </Button>
@@ -110,6 +139,12 @@ export default async function QuestionsAdminPage({
                     {q.originalText.slice(0, 140)}
                     {q.originalText.length > 140 ? "…" : ""}
                   </Link>
+                  {q.canonicalCode && (
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-xs text-muted">{q.canonicalCode}</span>
+                      <VerificationBadge status={q.verificationStatus} />
+                    </div>
+                  )}
                   {duplicateIds.has(q.id) && (
                     <div className="mt-1">
                       <Badge tone="warning">Mögliches Duplikat</Badge>
